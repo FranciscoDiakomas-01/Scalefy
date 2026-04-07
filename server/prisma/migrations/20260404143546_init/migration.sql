@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Plans" ADD COLUMN     "maxTrackers" INTEGER NOT NULL DEFAULT 1,
+ALTER COLUMN "maxCapains" SET DEFAULT 1;

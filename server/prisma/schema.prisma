@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  COSTUMER
+}
+
+enum NotificationType {
+  SELL
+  ALERT
+  SYTEM
+}
+
+enum EventType {
+  PURCHASE
+  PAGEVIEW
+  LEAD
+}
+
+enum Paymethod {
+  CARD
+  MOBILE
+  LINK
+  TRANSFER
+}
+
+
+enum GetaWay {
+  REFERENCE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  PENDING
+}
+
+enum PlanDurationType {
+  DAYS
+  MONTH
+  YEARS
+}
+
+model Users {
+  id String @default(uuid()) @id
+  isActive Boolean @default(true)
+  role UserRole @default(COSTUMER)
+  fullName String
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+  updated DateTime @updatedAt
+  Notification Notification[]
+  Recoveries Recoveries[]
+  Subscriptions Subscriptions[]
+}
+
+model Plans {
+  id String @default(uuid()) @id
+  title String @unique
+  description String?
+  features String[]
+  price Decimal @db.Decimal(10,2)
+  duration PlanDurationType
+  maxCapains Int @default(1) @unique
+  maxTrackers Int @default(1) @unique
+  createdAt DateTime @default(now())
+  Subscriptions Subscriptions[]
+}
+
+model Subscriptions {
+  id String @default(uuid()) @id
+  isActive Boolean @default(true)
+  subtotal Decimal @db.Decimal(10,2)
+  total Decimal @db.Decimal(10,2) 
+  tax Int
+  taxType String
+  planId String 
+  userId String
+  status SubscriptionStatus @default(PENDING)
+  paidAt DateTime?
+  mustPay Boolean @default(true)
+  expiresAt DateTime
+  provider GetaWay
+  getawayId String @unique
+  paylink String?
+  refernece String?
+  entity String?
+  createdAt DateTime @default(now())
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plans Plans @relation(fields: [planId] , references: [id] , onDelete:  Cascade)
+}
+
+model Recoveries {
+  id String @default(uuid()) @id
+  userId String
+  token String @unique
+  tents Int @default(0)
+  maxTent  Int @default(3)
+  isUsed Boolean @default(false)
+  isExpired Boolean @default(false)
+  createdAt DateTime @default(now())
+  expiredAt DateTime
+  metadata Json
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id String @default(uuid()) @id
+  userId String 
+  isRead Boolean @default(false)
+  message String
+  title String
+  deepLink String?
+  type NotificationType
+  createdAt DateTime @default(now())
+  updated DateTime @updatedAt
+  user Users @relation(fields: [userId] , references: [id] , onDelete: Cascade)
+}
+
+model Campains {
+  id String @default(uuid()) @id
+  userId String
+  title String 
+  funilUrl String
+  investment Decimal @db.Decimal(10,2)  @default(0)
+  factured Decimal @db.Decimal(10,2)  @default(0)
+  isActive Boolean @default(false)
+  totalEarned Decimal @db.Decimal(10,2) @default(0)
+  totalClicks Int @default(0)
+  totalPurchases Int @default(0)
+  totalPageViews Int @default(0)
+  totalLeaeds Int @default(0)
+  trackers Trackers[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, title])
+}
+
+model Trackers {
+  id String @default(uuid()) @id
+  campainsId String
+  key String @unique
+  title String
+  url String @unique
+  totalEarned Decimal @db.Decimal(10,2) @default(0)
+  totalClicks Int @default(0)
+  totalPurchases Int @default(0)
+  totalPageViews Int @default(0)
+  totalLeaeds Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive Boolean @default(false)
+  campain Campains @relation(fields: [campainsId], references: [id] , onDelete: Cascade)
+}
+
+model Clicks {
+  id String @default(uuid()) @id
+  trackerId String
+  clientData Json
+  trackerData Json
+  createdAt DateTime @default(now())
+}
+
+model Events {
+  id String @default(uuid()) @id
+  clickId String
+  eventType EventType
+  amount Decimal @db.Decimal(10,2) 
+  createdAt DateTime @default(now())
+  method Paymethod
+  @@unique([clickId, eventType])
+  client Client?
+  products CardItems[]
+}
+
+model Client {
+  id String @default(uuid()) @id
+  eventId String @unique
+  email String
+  phone String
+  name String
+  createdAt DateTime @default(now())
+  event Events @relation(fields: [eventId] , references: [id] , onDelete: Cascade)
+}
+
+model CardItems {
+  id String @default(uuid()) @id
+  eventId String
+  title String
+  description String?
+  price Decimal @db.Decimal(10 , 2)
+  createdAt DateTime @default(now())
+  event Events @relation(fields: [eventId] , references: [id] , onDelete: Cascade)
+}
