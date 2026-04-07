@@ -47,6 +47,14 @@ export class AppModule implements NestModule {
         path: "subscription/update",
         method: RequestMethod.POST,
       })
+      .exclude({
+        path: "plans/(.*)",
+        method: RequestMethod.GET,
+      })
+      .exclude({
+        path: "plans",
+        method: RequestMethod.GET,
+      })
       .forRoutes("*");
   }
 }

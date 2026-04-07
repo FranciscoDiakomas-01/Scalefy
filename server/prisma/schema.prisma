@@ -70,8 +70,8 @@ model Plans {
   features String[]
   price Decimal @db.Decimal(10,2)
   duration PlanDurationType
-  maxCapains Int @default(1) @unique
-  maxTrackers Int @default(1) @unique
+  maxCapains Int @default(1)
+  maxTrackers Int @default(1) 
   createdAt DateTime @default(now())
   Subscriptions Subscriptions[]
 }

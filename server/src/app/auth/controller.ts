@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from "@nestjs/common";
+import { Body, Controller, Post, Put, Req } from "@nestjs/common";
 import LoginService from "./services/LoginService";
 import LoginDto from "./dto/login";
 import SignService from "./services/signService";
@@ -52,7 +52,7 @@ export default class AuthController {
         "Link de recuperação de senha enviado para o email, caso exista um usuário com esse email",
     };
   }
-  @Post("/reset")
+  @Put("/reset")
   @ApiOperation({
     description: "Endpoint para redefinição de senha",
     summary: "Redefinição de senha",
