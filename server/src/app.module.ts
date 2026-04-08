@@ -13,6 +13,7 @@ import CostumerModule from "./app/costumers/module";
 import { AuthMidleware } from "./infra/http/middlewares/auth.middleware";
 import SubscriptionModule from "./app/subscriptions/module";
 import CampainsModule from "./app/campains/module";
+import TrackersModule from "./app/trackers/module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import CampainsModule from "./app/campains/module";
     CostumerModule,
     SubscriptionModule,
     CampainsModule,
+    TrackersModule,
   ],
   controllers: [],
   providers: [],

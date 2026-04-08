@@ -1,80 +1,61 @@
 import { Injectable } from "@nestjs/common";
-import ICampainRepositorie from "./absctration";
+import ITrackerRepositorie from "./absctration";
 import { PrismaService } from "src/infra/Database/prisma";
-import Campains from "src/domains/entities/Campaing";
-import CampainsDTO from "../dto/create";
 import { IPaginationProps, IPaginationReturnType } from "src/core/types";
+import Trackers from "src/domains/entities/Tracker";
+import TrackerDTO from "../dto/create";
 
 @Injectable()
-export default class PrismaCampainRepositorie implements ICampainRepositorie {
+export default class PrismaTrackerRepositorie implements ITrackerRepositorie {
   constructor(private readonly provider: PrismaService) {}
-
-  public async count(): Promise<number> {
-    return await this.provider.campains.count();
-  }
-  public async countByUserId(userId: string): Promise<number> {
-    return await this.provider.campains.count({
+  public async getByCampainId(campainId: string): Promise<Trackers[]> {
+    return (await this.provider.trackers.findMany({
       where: {
-        userId,
-      },
-    });
-  }
-  public async create(data: CampainsDTO, userId: string): Promise<Campains> {
-    return (await this.provider.campains.create({
-      data: {
-        funilUrl: data.funilUrl,
-        title: data.title,
-        investment: data.investment,
-        userId,
-      },
-    })) as any as Campains;
-  }
-  public async get(
-    props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>> {
-    const { page, limit } = props;
-    const offset = (page - 1) * limit;
-    const [total, campains] = await Promise.all([
-      this.count(),
-      this.provider.campains.findMany({
-        take: limit,
-        skip: offset,
-      }),
-    ]);
-
-    return {
-      items: campains as any,
-      lastPage: Math.ceil(total / limit),
-      limit,
-      page,
-      total,
-    };
-  }
-  public async getById(cmpainId: string): Promise<Campains | null> {
-    return (await this.provider.campains.findFirst({
-      where: {
-        id: cmpainId,
-      },
-
-      include: {
-        trackers: true,
-        _count: true,
+        campainsId: campainId,
       },
     })) as any;
   }
-  public async getByUser(
-    userId: string,
+  public async toogle(status: boolean, id: string): Promise<Trackers | null> {
+    return (await this.provider.trackers.update({
+      where: {
+        id,
+      },
+      data: {
+        isActive: status,
+      },
+    })) as any;
+  }
+  public async create(data: TrackerDTO): Promise<Trackers> {
+    return (await this.provider.trackers.create({
+      data: {
+        key: data.key,
+        title: data.title,
+        url: data.url,
+        isActive: true,
+        campainsId: data.campainsId,
+      },
+    })) as any as Trackers;
+  }
+  public async get(
     props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>> {
+  ): Promise<IPaginationReturnType<Trackers>> {
     const { page, limit } = props;
     const offset = (page - 1) * limit;
     const [total, campains] = await Promise.all([
-      this.countByUserId(userId),
-      this.provider.campains.findMany({
+      this.provider.trackers.count(),
+      this.provider.trackers.findMany({
         take: limit,
         skip: offset,
-        where: {
-          userId,
+        include: {
+          campain: {
+            include: {
+              user: {
+                omit: {
+                  password: true,
+                },
+              },
+            },
+          },
         },
       }),
     ]);
@@ -87,12 +68,11 @@ export default class PrismaCampainRepositorie implements ICampainRepositorie {
       total,
     };
   }
-  public async update(data: CampainsDTO, id: string): Promise<Campains | null> {
-    return (await this.provider.campains.update({
+  public async getByid(id: string): Promise<Trackers | null> {
+    return (await this.provider.trackers.findFirst({
       where: {
         id,
       },
-      data,
     })) as any;
   }
 }

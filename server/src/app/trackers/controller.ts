@@ -9,35 +9,32 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import CreateCampainService from "./services/createService";
-import UpdateCampainService from "./services/updateService";
-import GetCampainService from "./services/getService";
 import IsActiveUser from "src/infra/http/guards/isActiveUser.guard";
-import CampainsDTO from "./dto/create";
 import { CurrentUser } from "src/infra/http/decorators/curentUser.decorator";
 import { ApiOperation } from "@nestjs/swagger";
 import IsadminGuard from "src/infra/http/guards/isAdmin.guard";
 import type { IPaginationProps } from "src/core/types";
 import { PaginationPipe } from "src/infra/http/pipes";
+import CreateTrackerService from "./services/createService";
+import ToogleTrackerService from "./services/toogleService";
+import GetTrackerServices from "./services/getService";
+import TrackerDTO from "./dto/create";
 
-@Controller("campains")
+@Controller("trackers")
 @UseGuards(IsActiveUser)
-export default class CampainsController {
+export default class TrackersController {
   constructor(
-    private readonly CreateCampainService: CreateCampainService,
-    private readonly UpdateCampainService: UpdateCampainService,
-    private readonly GetCampainService: GetCampainService,
+    private readonly CreateTrackerService: CreateTrackerService,
+    private readonly ToogleTrackerService: ToogleTrackerService,
+    private readonly GetTrackerServices: GetTrackerServices,
   ) {}
 
   @Post()
   @ApiOperation({
-    summary: "Criação de campanha",
+    summary: "Criação de tracker",
   })
-  public async create(
-    @Body() data: CampainsDTO,
-    @CurrentUser() userId: string,
-  ) {
-    const created = await this.CreateCampainService.handle({
+  public async create(@Body() data: TrackerDTO, @CurrentUser() userId: string) {
+    const created = await this.CreateTrackerService.handle({
       ...data,
       userId,
     });
@@ -47,19 +44,19 @@ export default class CampainsController {
     };
   }
 
-  @Put(":id")
+  @Put("/:campainId/toogle/:id")
   @ApiOperation({
-    summary: "Actualização de campanha",
+    summary: "Actualização de tracker",
   })
   public async update(
-    @Body() data: CampainsDTO,
     @CurrentUser() userId: string,
-    @Param("id", new ParseUUIDPipe()) id: string,
+    @Param("campainId", new ParseUUIDPipe()) campainId: string,
+    @Param("id", new ParseUUIDPipe()) trackerId: string,
   ) {
-    const updated = await this.UpdateCampainService.handle({
-      ...data,
+    const updated = await this.ToogleTrackerService.handle({
+      campainId,
+      trackerId,
       userId,
-      campainId: id,
     });
 
     return {
@@ -70,56 +67,30 @@ export default class CampainsController {
   @Get()
   @UseGuards(IsadminGuard)
   @ApiOperation({
-    summary: "Listagem de todas campanha",
+    summary: "Listagem de todas tracker",
   })
   public async get(
     @Query(new PaginationPipe()) props: IPaginationProps,
     @Query("page") page: number,
     @Query("limit") limit: number,
   ) {
-    const [data, count] = await Promise.all([
-      this.GetCampainService.get(props),
-      this.GetCampainService.count(),
-    ]);
+    const data = await this.GetTrackerServices.get(props);
     return {
       data: data?.data,
-      count: count?.data,
     };
   }
 
-  @Get("/my")
+  @Get("/trackers/:campainId")
   @ApiOperation({
-    summary: "Listagem de todas campanha por usuário",
+    summary: "Listagem de todas tracker por usuário e por campanha",
   })
   public async getByUser(
-    @Query(new PaginationPipe()) props: IPaginationProps,
-    @Query("page") page: number,
-    @Query("limit") limit: number,
+    @Param("campainId", new ParseUUIDPipe()) campainId: string,
     @CurrentUser() userId: string,
   ) {
-    const [data, count] = await Promise.all([
-      this.GetCampainService.getByUserId(props, userId),
-      this.GetCampainService.countByUserId(userId),
-    ]);
+    const data = await this.GetTrackerServices.getDetails(campainId, userId);
     return {
-      data: data?.data,
-      count: count?.data,
-    };
-  }
-
-  @Get("/details/:id")
-  @ApiOperation({
-    summary: "Listagem detahes de uma campanha",
-  })
-  public async details(
-    @Param("id", new ParseUUIDPipe()) id: string,
-    @CurrentUser() userId: string,
-  ) {
-    const [data] = await Promise.all([
-      this.GetCampainService.getDetails(id, userId),
-    ]);
-    return {
-      data: data?.data,
+      data: data,
     };
   }
 }

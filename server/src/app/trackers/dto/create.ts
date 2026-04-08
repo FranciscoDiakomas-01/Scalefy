@@ -1,27 +1,31 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
 import {
+  IsEmpty,
   IsNotEmpty,
-  IsNumber,
-  IsPositive,
-  IsString,
-  IsUrl,
-  MaxLength,
-  Min,
+  IsOptional,
+  IsUUID,
   MinLength,
 } from "class-validator";
 
-export default class CampainsDTO {
-  @IsString()
-  @MinLength(3)
-  @MaxLength(255)
-  @ApiProperty()
-  title!: string;
-  @IsUrl()
+export default class TrackerDTO {
+  @IsUUID()
   @IsNotEmpty()
-  @ApiProperty()
-  funilUrl!: string;
-  @IsNumber()
-  @IsPositive()
-  @ApiProperty()
-  investment!: number;
+  @ApiProperty({
+    title: "Id da campanha",
+  })
+  campainsId!: string;
+  @IsNotEmpty()
+  @ApiProperty({
+    title: "Título do trackeador",
+  })
+  @MinLength(3)
+  title!: string;
+  @ApiHideProperty()
+  @IsEmpty()
+  @IsOptional()
+  key!: string;
+  @ApiHideProperty()
+  @IsEmpty()
+  @IsOptional()
+  url!: string;
 }

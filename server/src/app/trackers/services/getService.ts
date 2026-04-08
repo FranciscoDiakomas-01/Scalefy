@@ -1,40 +1,36 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type ISubscriptionsRepository from "src/app/subscriptions/repositories/absctracions";
-import type ICampainRepositorie from "../repositories/absctration";
 import { IPaginationProps } from "src/core/types";
 import type { ICostumerRepostory } from "src/app/costumers/repositories/abstraction";
 import CostumerNotFoundError from "src/app/costumers/error";
-import { CampainNotFoundError } from "../error";
 import { UserRole } from "src/domains/entities/User";
 import NoPermitionError from "src/core/error";
+import type ITrackerRepository from "../repositories/absctration";
+import type ICampainRepositorie from "src/app/campains/repositories/absctration";
+import { CampainNotFoundError } from "src/app/campains/error";
 
 @Injectable()
-export default class GetCampainService {
+export default class GetTrackerServices {
   constructor(
     @Inject("ICampainRepositorie")
     private readonly ICampainRepositorie: ICampainRepositorie,
     @Inject("ICostumerRepostory")
     private readonly ICostumerRepostory: ICostumerRepostory,
+    @Inject("ITrackerRepository")
+    private readonly ITrackerRepository: ITrackerRepository,
   ) {}
 
-  public async getByUserId(props: IPaginationProps, userId: string) {
-    const campains = await this.ICampainRepositorie.getByUser(userId, props);
-    return {
-      data: campains,
-    };
-  }
-
   public async get(props: IPaginationProps) {
-    const campains = await this.ICampainRepositorie.get(props);
+    const trackers = await this.ITrackerRepository.get(props);
     return {
-      data: campains,
+      data: trackers,
     };
   }
 
   public async getDetails(campainId: string, userId: string) {
-    const [campain, user] = await Promise.all([
+    const [campain, user, trackers] = await Promise.all([
       this.ICampainRepositorie.getById(campainId),
       this.ICostumerRepostory.getById(userId),
+      this.ITrackerRepository.getByCampainId(campainId),
     ]);
 
     if (!user || !user?.user) {
@@ -49,22 +45,9 @@ export default class GetCampainService {
     if (!canShow) {
       throw new NoPermitionError();
     }
-
     return {
-      data: campain,
-    };
-  }
-
-  public async countByUserId(userId: string) {
-    const count = await this.ICampainRepositorie.countByUserId(userId);
-    return {
-      data: count,
-    };
-  }
-  public async count() {
-    const count = await this.ICampainRepositorie.count();
-    return {
-      data: count,
+      campain,
+      trackers,
     };
   }
 }

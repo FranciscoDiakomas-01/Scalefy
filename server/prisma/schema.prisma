@@ -61,6 +61,7 @@ model Users {
   Notification Notification[]
   Recoveries Recoveries[]
   Subscriptions Subscriptions[]
+  Campains Campains[]
 }
 
 model Plans {
@@ -140,6 +141,7 @@ model Campains {
   trackers Trackers[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user Users @relation(fields: [userId] , references: [id] , onDelete: Cascade)
 }
 
 model Trackers {
@@ -155,7 +157,7 @@ model Trackers {
   totalLeaeds Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  isActive Boolean @default(false)
+  isActive Boolean @default(true)
   campain Campains @relation(fields: [campainsId], references: [id] , onDelete: Cascade)
   Clicks Clicks[]
 }

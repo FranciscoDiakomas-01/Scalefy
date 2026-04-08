@@ -1,32 +1,33 @@
 import { Module } from "@nestjs/common";
 import CostumerModule from "../costumers/module";
-import CreateCampainService from "./services/createService";
-import UpdateCampainService from "./services/updateService";
-import GetCampainService from "./services/getService";
-import PrismaCampainRepositorie from "./repositories/implementation";
+import PrismaTrackerRepositorie from "./repositories/implementation";
 import SubscriptionModule from "../subscriptions/module";
-import CampainsController from "./controller";
+import CampainsModule from "../campains/module";
+import CreateTrackerService from "./services/createService";
+import GetTrackerServices from "./services/getService";
+import ToogleTrackerService from "./services/toogleService";
+import TrackersController from "./controller";
 
 @Module({
   providers: [
     {
-      provide: "ICampainRepositorie",
-      useClass: PrismaCampainRepositorie,
+      provide: "ITrackerRepository",
+      useClass: PrismaTrackerRepositorie,
     },
-    CreateCampainService,
-    UpdateCampainService,
-    GetCampainService,
+    CreateTrackerService,
+    ToogleTrackerService,
+    GetTrackerServices,
   ],
   exports: [
     {
-      provide: "ICampainRepositorie",
-      useClass: PrismaCampainRepositorie,
+      provide: "ITrackerRepository",
+      useClass: PrismaTrackerRepositorie,
     },
-    CreateCampainService,
-    UpdateCampainService,
-    GetCampainService,
+    CreateTrackerService,
+    ToogleTrackerService,
+    GetTrackerServices,
   ],
-  controllers: [CampainsController],
-  imports: [SubscriptionModule, CostumerModule],
+  controllers: [TrackersController],
+  imports: [SubscriptionModule, CostumerModule, CampainsModule],
 })
-export default class CampainsModule {}
+export default class TrackersModule {}

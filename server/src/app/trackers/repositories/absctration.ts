@@ -1,16 +1,11 @@
 import { IPaginationProps, IPaginationReturnType } from "src/core/types";
-import Campains from "src/domains/entities/Campaing";
-import CampainsDTO from "../dto/create";
+import Trackers from "src/domains/entities/Tracker";
+import TrackerDTO from "../dto/create";
 
-export default interface ICampainRepositorie {
-  getByUser(
-    userId: string,
-    props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>>;
-  create(data: CampainsDTO, userId: string): Promise<Campains>;
-  get(props: IPaginationProps): Promise<IPaginationReturnType<Campains>>;
-  getById(cmpainId: string): Promise<Campains | null>;
-  update(data: CampainsDTO, id: string): Promise<Campains | null>;
-  countByUserId(userId: string): Promise<number>;
-  count(): Promise<number>;
+export default interface ITrackerRepository {
+  getByCampainId(campainId: string): Promise<Trackers[]>;
+  create(data: TrackerDTO): Promise<Trackers>;
+  get(props: IPaginationProps): Promise<IPaginationReturnType<Trackers>>;
+  toogle(status: boolean, id: string): Promise<Trackers | null>;
+  getByid(id: string): Promise<Trackers | null>;
 }
