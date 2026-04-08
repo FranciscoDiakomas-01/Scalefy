@@ -24,7 +24,6 @@ export default class PrismaCampainRepositorie implements ICampainRepositorie {
       data: {
         funilUrl: data.funilUrl,
         title: data.title,
-        investment: data.investment,
         userId,
       },
     })) as any as Campains;

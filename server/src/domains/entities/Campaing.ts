@@ -5,7 +5,6 @@ export default class Campains {
   userId!: string;
   title!: string;
   funilUrl!: string;
-  investment!: number;
   factured!: number;
   isActive!: boolean;
   totalEarned!: number;

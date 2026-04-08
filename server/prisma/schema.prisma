@@ -130,7 +130,6 @@ model Campains {
   userId String
   title String 
   funilUrl String
-  investment Decimal @db.Decimal(10,2)  @default(0)
   factured Decimal @db.Decimal(10,2)  @default(0)
   isActive Boolean @default(true)
   totalEarned Decimal @db.Decimal(10,2) @default(0)
