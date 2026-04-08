@@ -5,41 +5,29 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Put,
-  Query,
   UseGuards,
 } from "@nestjs/common";
-import CreateCampainService from "./services/createService";
-import UpdateCampainService from "./services/updateService";
-import GetCampainService from "./services/getService";
-import IsActiveUser from "src/infra/http/guards/isActiveUser.guard";
-import CampainsDTO from "./dto/create";
 import { CurrentUser } from "src/infra/http/decorators/curentUser.decorator";
 import { ApiOperation } from "@nestjs/swagger";
 import IsadminGuard from "src/infra/http/guards/isAdmin.guard";
-import type { IPaginationProps } from "src/core/types";
-import { PaginationPipe } from "src/infra/http/pipes";
+import GetEventsServices from "./services/getService";
+import CreateEventService from "./services/createService";
+import EventDTO from "./dto/create";
 
-@Controller("campains")
-@UseGuards(IsActiveUser)
-export default class CampainsController {
+@Controller("events")
+export default class EventsController {
   constructor(
-    private readonly CreateCampainService: CreateCampainService,
-    private readonly UpdateCampainService: UpdateCampainService,
-    private readonly GetCampainService: GetCampainService,
+    private readonly GetEventsServices: GetEventsServices,
+    private readonly CreateEventService: CreateEventService,
   ) {}
 
   @Post()
   @ApiOperation({
-    summary: "Criação de campanha",
+    summary: "Criação de evento",
   })
-  public async create(
-    @Body() data: CampainsDTO,
-    @CurrentUser() userId: string,
-  ) {
-    const created = await this.CreateCampainService.handle({
+  public async create(@Body() data: EventDTO) {
+    const created = await this.CreateEventService.handle({
       ...data,
-      userId,
     });
 
     return {
@@ -47,79 +35,16 @@ export default class CampainsController {
     };
   }
 
-  @Put(":id")
-  @ApiOperation({
-    summary: "Actualização de campanha",
-  })
-  public async update(
-    @Body() data: CampainsDTO,
-    @CurrentUser() userId: string,
-    @Param("id", new ParseUUIDPipe()) id: string,
-  ) {
-    const updated = await this.UpdateCampainService.handle({
-      ...data,
-      userId,
-      campainId: id,
-    });
-
-    return {
-      data: updated,
-    };
-  }
-
-  @Get()
+  @Get(":id")
   @UseGuards(IsadminGuard)
   @ApiOperation({
-    summary: "Listagem de todas campanha",
+    summary: "Listagem de eventos por click",
   })
   public async get(
-    @Query(new PaginationPipe()) props: IPaginationProps,
-    @Query("page") page: number,
-    @Query("limit") limit: number,
-  ) {
-    const [data, count] = await Promise.all([
-      this.GetCampainService.get(props),
-      this.GetCampainService.count(),
-    ]);
-    return {
-      data: data?.data,
-      count: count?.data,
-    };
-  }
-
-  @Get("/my")
-  @ApiOperation({
-    summary: "Listagem de todas campanha por usuário",
-  })
-  public async getByUser(
-    @Query(new PaginationPipe()) props: IPaginationProps,
-    @Query("page") page: number,
-    @Query("limit") limit: number,
     @CurrentUser() userId: string,
+    @Param("id", new ParseUUIDPipe()) clickId: string,
   ) {
-    const [data, count] = await Promise.all([
-      this.GetCampainService.getByUserId(props, userId),
-      this.GetCampainService.countByUserId(userId),
-    ]);
-    return {
-      data: data?.data,
-      count: count?.data,
-    };
-  }
-
-  @Get("/details/:id")
-  @ApiOperation({
-    summary: "Listagem detahes de uma campanha",
-  })
-  public async details(
-    @Param("id", new ParseUUIDPipe()) id: string,
-    @CurrentUser() userId: string,
-  ) {
-    const [data] = await Promise.all([
-      this.GetCampainService.getDetails(id, userId),
-    ]);
-    return {
-      data: data?.data,
-    };
+    const events = await this.GetEventsServices.get(userId, clickId);
+    return events;
   }
 }

@@ -179,7 +179,6 @@ model Events {
   amount Decimal @db.Decimal(10,2) 
   createdAt DateTime @default(now())
   method Paymethod
-  @@unique([clickId, eventType])
   client Client?
   products CardItems[]
   click Clicks @relation(fields: [clickId] , references: [id] , onDelete: Cascade)

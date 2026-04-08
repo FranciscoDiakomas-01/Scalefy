@@ -1,98 +1,74 @@
 import { Injectable } from "@nestjs/common";
-import ICampainRepositorie from "./absctration";
 import { PrismaService } from "src/infra/Database/prisma";
-import Campains from "src/domains/entities/Campaing";
-import CampainsDTO from "../dto/create";
 import { IPaginationProps, IPaginationReturnType } from "src/core/types";
+import IclickRepository from "./absctration";
+import Clicks from "src/domains/entities/Click";
 
 @Injectable()
-export default class PrismaCampainRepositorie implements ICampainRepositorie {
+export default class PrismaClickRepositorie implements IclickRepository {
   constructor(private readonly provider: PrismaService) {}
-
-  public async count(): Promise<number> {
-    return await this.provider.campains.count();
-  }
-  public async countByUserId(userId: string): Promise<number> {
-    return await this.provider.campains.count({
-      where: {
-        userId,
+  public async genclick(
+    trackerId: string,
+    clientData: Record<string, any>,
+    trackerData: Record<string, any>,
+  ): Promise<Clicks> {
+    const click = await this.provider.clicks.create({
+      data: {
+        clientData: JSON.stringify(clientData),
+        trackerData: JSON.stringify(trackerData),
+        trackerId: trackerId,
       },
     });
-  }
-  public async create(data: CampainsDTO, userId: string): Promise<Campains> {
-    return (await this.provider.campains.create({
-      data: {
-        funilUrl: data.funilUrl,
-        title: data.title,
-        investment: data.investment,
-        userId,
-      },
-    })) as any as Campains;
-  }
-  public async get(
-    props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>> {
-    const { page, limit } = props;
-    const offset = (page - 1) * limit;
-    const [total, campains] = await Promise.all([
-      this.count(),
-      this.provider.campains.findMany({
-        take: limit,
-        skip: offset,
-      }),
-    ]);
-
-    return {
-      items: campains as any,
-      lastPage: Math.ceil(total / limit),
-      limit,
-      page,
-      total,
-    };
-  }
-  public async getById(cmpainId: string): Promise<Campains | null> {
-    return (await this.provider.campains.findFirst({
+    await this.provider.trackers.update({
       where: {
-        id: cmpainId,
+        id: trackerId,
       },
-
-      include: {
-        trackers: true,
-        _count: true,
+      data: {
+        campain: {
+          update: {
+            totalClicks: {
+              increment: 1,
+            },
+          },
+        },
       },
-    })) as any;
+    });
+    return click as Clicks;
   }
-  public async getByUser(
-    userId: string,
+  public async getClickByTrackerId(
+    trackerId: string,
     props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>> {
+  ): Promise<IPaginationReturnType<Clicks>> {
     const { page, limit } = props;
     const offset = (page - 1) * limit;
-    const [total, campains] = await Promise.all([
-      this.countByUserId(userId),
-      this.provider.campains.findMany({
+    const [total, clicks] = await Promise.all([
+      this.provider.clicks.count({
+        where: {
+          trackerId,
+        },
+      }),
+      this.provider.clicks.findMany({
         take: limit,
         skip: offset,
         where: {
-          userId,
+          trackerId,
         },
       }),
     ]);
-
     return {
-      items: campains as any,
+      items: clicks as any,
+      total,
       lastPage: Math.ceil(total / limit),
       limit,
       page,
-      total,
     };
   }
-  public async update(data: CampainsDTO, id: string): Promise<Campains | null> {
-    return (await this.provider.campains.update({
+
+  public async getById(id: string): Promise<Clicks | null> {
+    return (await this.provider.clicks.findFirst({
       where: {
         id,
       },
-      data,
     })) as any;
   }
 }

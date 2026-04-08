@@ -1,32 +1,30 @@
 import { Module } from "@nestjs/common";
 import CostumerModule from "../costumers/module";
-import CreateCampainService from "./services/createService";
-import UpdateCampainService from "./services/updateService";
-import GetCampainService from "./services/getService";
-import PrismaCampainRepositorie from "./repositories/implementation";
 import SubscriptionModule from "../subscriptions/module";
-import CampainsController from "./controller";
+import ClickController from "./controller";
+import PrismaClickRepositorie from "./repositories/implementation";
+import GenerateClickService from "./services/createService";
+import GetClickServices from "./services/getService";
+import TrackersModule from "../trackers/module";
 
 @Module({
   providers: [
     {
-      provide: "ICampainRepositorie",
-      useClass: PrismaCampainRepositorie,
+      provide: "IclickRepository",
+      useClass: PrismaClickRepositorie,
     },
-    CreateCampainService,
-    UpdateCampainService,
-    GetCampainService,
+    GenerateClickService,
+    GetClickServices,
   ],
   exports: [
     {
-      provide: "ICampainRepositorie",
-      useClass: PrismaCampainRepositorie,
+      provide: "IclickRepository",
+      useClass: PrismaClickRepositorie,
     },
-    CreateCampainService,
-    UpdateCampainService,
-    GetCampainService,
+    GenerateClickService,
+    GetClickServices,
   ],
-  controllers: [CampainsController],
-  imports: [SubscriptionModule, CostumerModule],
+  controllers: [ClickController],
+  imports: [SubscriptionModule, CostumerModule, TrackersModule],
 })
-export default class CampainsModule {}
+export default class ClickModule {}

@@ -13,6 +13,9 @@ export default class PrismaTrackerRepositorie implements ITrackerRepositorie {
       where: {
         campainsId: campainId,
       },
+      include: {
+        _count: true,
+      },
     })) as any;
   }
   public async toogle(status: boolean, id: string): Promise<Trackers | null> {
@@ -71,7 +74,17 @@ export default class PrismaTrackerRepositorie implements ITrackerRepositorie {
   public async getByid(id: string): Promise<Trackers | null> {
     return (await this.provider.trackers.findFirst({
       where: {
-        id,
+        OR: [
+          {
+            id,
+          },
+          {
+            key: id,
+          },
+        ],
+      },
+      include: {
+        campain: true,
       },
     })) as any;
   }

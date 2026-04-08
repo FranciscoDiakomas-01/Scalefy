@@ -1,98 +1,99 @@
 import { Injectable } from "@nestjs/common";
-import ICampainRepositorie from "./absctration";
 import { PrismaService } from "src/infra/Database/prisma";
-import Campains from "src/domains/entities/Campaing";
 import CampainsDTO from "../dto/create";
-import { IPaginationProps, IPaginationReturnType } from "src/core/types";
+import IEventRepositorie from "./absctration";
+import Events, { EventType } from "src/domains/entities/Event";
+import Clicks from "src/domains/entities/Click";
 
 @Injectable()
-export default class PrismaCampainRepositorie implements ICampainRepositorie {
+export default class PrismaEventRepositorie implements IEventRepositorie {
   constructor(private readonly provider: PrismaService) {}
-
-  public async count(): Promise<number> {
-    return await this.provider.campains.count();
-  }
-  public async countByUserId(userId: string): Promise<number> {
-    return await this.provider.campains.count({
+  public async getByClickId(clickId: string): Promise<Events[]> {
+    const events = await this.provider.events.findMany({
       where: {
-        userId,
+        clickId,
       },
     });
-  }
-  public async create(data: CampainsDTO, userId: string): Promise<Campains> {
-    return (await this.provider.campains.create({
-      data: {
-        funilUrl: data.funilUrl,
-        title: data.title,
-        investment: data.investment,
-        userId,
-      },
-    })) as any as Campains;
-  }
-  public async get(
-    props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>> {
-    const { page, limit } = props;
-    const offset = (page - 1) * limit;
-    const [total, campains] = await Promise.all([
-      this.count(),
-      this.provider.campains.findMany({
-        take: limit,
-        skip: offset,
-      }),
-    ]);
 
-    return {
-      items: campains as any,
-      lastPage: Math.ceil(total / limit),
-      limit,
-      page,
-      total,
-    };
+    return events as any;
   }
-  public async getById(cmpainId: string): Promise<Campains | null> {
-    return (await this.provider.campains.findFirst({
+  public async register(data: CampainsDTO): Promise<Events> {
+    const clik = (await this.provider.clicks.findFirst({
       where: {
-        id: cmpainId,
+        id: data.clickId,
       },
 
       include: {
-        trackers: true,
-        _count: true,
-      },
-    })) as any;
-  }
-  public async getByUser(
-    userId: string,
-    props: IPaginationProps,
-  ): Promise<IPaginationReturnType<Campains>> {
-    const { page, limit } = props;
-    const offset = (page - 1) * limit;
-    const [total, campains] = await Promise.all([
-      this.countByUserId(userId),
-      this.provider.campains.findMany({
-        take: limit,
-        skip: offset,
-        where: {
-          userId,
+        tracker: {
+          include: {
+            campain: true,
+          },
         },
-      }),
-    ]);
-
-    return {
-      items: campains as any,
-      lastPage: Math.ceil(total / limit),
-      limit,
-      page,
-      total,
-    };
-  }
-  public async update(data: CampainsDTO, id: string): Promise<Campains | null> {
-    return (await this.provider.campains.update({
-      where: {
-        id,
       },
-      data,
-    })) as any;
+    })) as any as Clicks;
+    const { tracker } = clik;
+    const { client, products, eventType } = data;
+    const event = await this.provider.events.create({
+      data: {
+        amount: Number(data.amount),
+        clickId: data.clickId,
+        eventType: data.eventType,
+        method: data.method,
+        client: {
+          create: {
+            email: client.email,
+            name: client.name,
+            phone: client.phone,
+          },
+        },
+        products: {
+          create: products.map((item) => {
+            return {
+              price: item.price,
+              title: item.title,
+              description: item?.description,
+            };
+          }),
+        },
+      },
+    });
+    await this.provider.clicks.update({
+      where: {
+        id: event.clickId,
+      },
+      data: {
+        tracker: {
+          update: {
+            totalPageViews:
+              eventType === EventType.PAGEVIEW
+                ? tracker.totalPageViews + 1
+                : tracker.totalPageViews,
+
+            totalPurchases:
+              eventType === EventType.PURCHASE
+                ? tracker.totalPurchases + 1
+                : tracker.totalPurchases,
+
+            totalLeaeds:
+              eventType === EventType.LEAD
+                ? tracker.totalLeaeds + 1
+                : tracker.totalLeaeds,
+
+            totalEarned:
+              eventType === EventType.PURCHASE
+                ? tracker.totalEarned + data.amount
+                : tracker.totalEarned,
+          },
+        },
+      },
+    });
+    return event as any;
+  }
+  public async countEvents(clickId: string): Promise<number> {
+    return await this.provider.events.count({
+      where: {
+        clickId,
+      },
+    });
   }
 }

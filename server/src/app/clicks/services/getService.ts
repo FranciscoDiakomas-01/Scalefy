@@ -1,70 +1,38 @@
-import { Inject, Injectable } from "@nestjs/common";
-import type ISubscriptionsRepository from "src/app/subscriptions/repositories/absctracions";
-import type ICampainRepositorie from "../repositories/absctration";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { IPaginationProps } from "src/core/types";
-import type { ICostumerRepostory } from "src/app/costumers/repositories/abstraction";
-import CostumerNotFoundError from "src/app/costumers/error";
-import { CampainNotFoundError } from "../error";
-import { UserRole } from "src/domains/entities/User";
 import NoPermitionError from "src/core/error";
+import type IclickRepository from "../repositories/absctration";
+import type ITrackerRepository from "src/app/trackers/repositories/absctration";
 
 @Injectable()
-export default class GetCampainService {
+export default class GetClickServices {
   constructor(
-    @Inject("ICampainRepositorie")
-    private readonly ICampainRepositorie: ICampainRepositorie,
-    @Inject("ICostumerRepostory")
-    private readonly ICostumerRepostory: ICostumerRepostory,
+    @Inject("IclickRepository")
+    private readonly IclickRepository: IclickRepository,
+    @Inject("ITrackerRepository")
+    private readonly ITrackerRepository: ITrackerRepository,
   ) {}
 
-  public async getByUserId(props: IPaginationProps, userId: string) {
-    const campains = await this.ICampainRepositorie.getByUser(userId, props);
-    return {
-      data: campains,
-    };
-  }
+  public async get(trackerId: string, userId: string, props: IPaginationProps) {
+    const tracker = await this.ITrackerRepository.getByid(trackerId);
 
-  public async get(props: IPaginationProps) {
-    const campains = await this.ICampainRepositorie.get(props);
-    return {
-      data: campains,
-    };
-  }
-
-  public async getDetails(campainId: string, userId: string) {
-    const [campain, user] = await Promise.all([
-      this.ICampainRepositorie.getById(campainId),
-      this.ICostumerRepostory.getById(userId),
-    ]);
-
-    if (!user || !user?.user) {
-      throw new CostumerNotFoundError();
+    if (!tracker) {
+      throw new NotFoundException({
+        message: "Trackeador não enocntrado",
+      });
     }
-    if (!campain) {
-      throw new CampainNotFoundError();
-    }
-    const canShow =
-      user.user?.id == campain.userId || user.user?.role != UserRole.ADMIN;
 
-    if (!canShow) {
+    const { campain } = tracker;
+
+    if (campain.userId != userId) {
       throw new NoPermitionError();
     }
-
+    const clicks = await this.IclickRepository.getClickByTrackerId(
+      trackerId,
+      props,
+    );
     return {
-      data: campain,
-    };
-  }
-
-  public async countByUserId(userId: string) {
-    const count = await this.ICampainRepositorie.countByUserId(userId);
-    return {
-      data: count,
-    };
-  }
-  public async count() {
-    const count = await this.ICampainRepositorie.count();
-    return {
-      data: count,
+      data: clicks,
     };
   }
 }

@@ -14,6 +14,8 @@ import { AuthMidleware } from "./infra/http/middlewares/auth.middleware";
 import SubscriptionModule from "./app/subscriptions/module";
 import CampainsModule from "./app/campains/module";
 import TrackersModule from "./app/trackers/module";
+import ClickModule from "./app/clicks/module";
+import EventModule from "./app/events/module";
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import TrackersModule from "./app/trackers/module";
     SubscriptionModule,
     CampainsModule,
     TrackersModule,
+    ClickModule,
+    EventModule,
   ],
   controllers: [],
   providers: [],
@@ -56,8 +60,16 @@ export class AppModule implements NestModule {
         method: RequestMethod.GET,
       })
       .exclude({
+        path: "clicks/(.*)",
+        method: RequestMethod.POST,
+      })
+      .exclude({
         path: "plans",
         method: RequestMethod.GET,
+      })
+      .exclude({
+        path: "events",
+        method: RequestMethod.POST,
       })
       .forRoutes("*");
   }
