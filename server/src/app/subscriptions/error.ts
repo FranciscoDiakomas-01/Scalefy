@@ -19,6 +19,12 @@ export class UserAlreadySubscribed extends HttpException {
 
 export class UserAlreayUsedUnPaidSubscriptionError extends HttpException {
   constructor() {
-    super("Usuário já possui uma assinatura ativa", 403);
+    super("Usuário já possui uma subscrição não paga", 403);
+  }
+}
+
+export class UserNotSubscribed extends HttpException {
+  constructor() {
+    super("Usuário não possui uma assinatura ativa", 403);
   }
 }

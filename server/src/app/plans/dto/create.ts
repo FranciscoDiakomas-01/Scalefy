@@ -52,20 +52,4 @@ export default class PlanDTO {
   })
   @IsEnum(PlanDurationType)
   duration!: PlanDurationType;
-
-  @ApiProperty({
-    example: 10,
-    description: "Máximo de campanhas (0 = ilimitado)",
-  })
-  @IsNumber()
-  @Min(0)
-  maxCapains!: number;
-
-  @ApiProperty({
-    example: 5,
-    description: "Máximo de trackers (0 = ilimitado)",
-  })
-  @IsNumber()
-  @Min(0)
-  maxTrackers!: number;
 }

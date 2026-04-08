@@ -1,4 +1,3 @@
-import { Plans, Subscriptions } from "@prisma/client";
 import { IPaginationProps, IPaginationReturnType } from "src/core/types";
 import { User } from "src/domains/entities/User";
 import { IGetUserReturnType, IUpateUserProp } from "../shared/type";

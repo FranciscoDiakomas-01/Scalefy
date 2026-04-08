@@ -84,8 +84,8 @@ export class CreateSubscriptionService implements InterService<
         expiresAt,
         getawayId: getawayData.id,
         status: mustPay
-          ? SubscriptionStatus.ACTIVE
-          : SubscriptionStatus.PENDING,
+          ? SubscriptionStatus.PENDING
+          : SubscriptionStatus.ACTIVE,
         mustPay,
         provider: paymentStrategy.getProviderName(),
         planId: plan.id,

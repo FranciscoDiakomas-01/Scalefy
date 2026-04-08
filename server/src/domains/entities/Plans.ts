@@ -4,8 +4,6 @@ export class Plans {
   description!: string | null;
   features!: string[];
   price!: number;
-  maxCapains!: number;
-  maxTrackers!: number;
   duration!: PlanDurationType;
 }
 

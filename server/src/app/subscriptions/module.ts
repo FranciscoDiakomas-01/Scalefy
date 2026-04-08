@@ -17,6 +17,15 @@ import PlansModule from "../plans/module";
       useClass: PrismaSubscriptionsRepository,
     },
   ],
+  exports: [
+    CreateSubscriptionService,
+    GetSubscriptionService,
+    UpdateSubscriptionService,
+    {
+      provide: "ISubscriptionsRepository",
+      useClass: PrismaSubscriptionsRepository,
+    },
+  ],
   controllers: [SubcriptionController],
   imports: [CostumerModule, PlansModule],
 })

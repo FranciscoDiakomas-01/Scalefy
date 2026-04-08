@@ -18,8 +18,6 @@ async function main() {
           "7 dias gratuito de uso",
           "suporte 24/24 via whatsapp",
         ],
-        maxCapains: 1,
-        maxTrackers: 5,
         duration: "DAYS",
       },
       create: {
@@ -34,8 +32,6 @@ async function main() {
           "suporte 24/24 via whatsapp",
         ],
         duration: "DAYS",
-        maxCapains: 1,
-        maxTrackers: 5,
       },
     }),
     prisma.plans.upsert({
@@ -53,8 +49,6 @@ async function main() {
           "7 dias gratuito de uso",
           "suporte 24/24 via whatsapp",
         ],
-        maxCapains: 0,
-        maxTrackers: 0,
         duration: "MONTH",
       },
       create: {
@@ -70,8 +64,6 @@ async function main() {
           "7 dias gratuito de uso",
           "suporte 24/24 via whatsapp",
         ],
-        maxCapains: 0,
-        maxTrackers: 0,
         duration: "MONTH",
       },
     }),
