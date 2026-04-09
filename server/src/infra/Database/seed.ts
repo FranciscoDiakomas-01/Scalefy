@@ -1,9 +1,30 @@
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
+import EncriptService from "../../app/auth/services/EncriptService";
 
 const prisma = new PrismaClient();
-
+const defaultAdmin = {
+  email: process.env.ADMIN_EMAIL!,
+  password: new EncriptService().encript(process.env.ADMIN_PASSWORD!),
+};
 async function main() {
+  const hasAdmin = await prisma.users.findFirst({
+    where: {
+      role: "ADMIN",
+      email: defaultAdmin.email,
+    },
+  });
+  if (!hasAdmin) {
+    console.log("✅ creating admin");
+    await prisma.users.create({
+      data: {
+        fullName: "Scalefy ADMIN",
+        email: defaultAdmin.email,
+        password: defaultAdmin.password,
+        role: "ADMIN",
+      },
+    });
+  }
   await Promise.all([
     prisma.plans.upsert({
       where: { title: "FREE" },
@@ -32,39 +53,6 @@ async function main() {
           "suporte 24/24 via whatsapp",
         ],
         duration: "DAYS",
-      },
-    }),
-    prisma.plans.upsert({
-      where: { title: "PRO" },
-      update: {
-        title: "PRO",
-        description: "Plano pro",
-        price: 10_000,
-        features: [
-          "1 mês de uso",
-          "suporte 24/24 via whatsapp",
-          "Conjuntos de trackeadores ilimitado",
-          "Trackeadores limitados",
-          "Captura de evento ilimtados",
-          "7 dias gratuito de uso",
-          "suporte 24/24 via whatsapp",
-        ],
-        duration: "MONTH",
-      },
-      create: {
-        title: "PRO",
-        description: "Plano pro",
-        price: 10_000,
-        features: [
-          "1 mês de uso",
-          "suporte 24/24 via whatsapp",
-          "Conjuntos de trackeadores ilimitado",
-          "Trackeadores limitados",
-          "Captura de evento ilimtados",
-          "7 dias gratuito de uso",
-          "suporte 24/24 via whatsapp",
-        ],
-        duration: "MONTH",
       },
     }),
   ]);

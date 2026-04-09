@@ -162,5 +162,14 @@ ADMIN_PASSWORD=""
 
 ## Example .env ##
 ```
-▶️ Rodando o projeto
-pnpm install && pnpm migrate && pnpm dev
+
+
+## ▶️ Rodando o projetos
+
+- pnpm install
+- pnpm migrate
+- pnpm seed
+- pnpm dev
+- pnpm start
+
+---
