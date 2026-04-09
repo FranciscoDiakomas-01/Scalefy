@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
@@ -16,6 +17,7 @@ import { PaginationPipe } from "src/infra/http/pipes";
 import GenerateClickService from "./services/createService";
 import type { Request } from "express";
 import GetClickServices from "./services/getService";
+import { CreateClickDto } from "./dto/create";
 
 @Controller("clicks")
 export default class ClickController {
@@ -24,16 +26,13 @@ export default class ClickController {
     private readonly GetClickServices: GetClickServices,
   ) {}
 
-  @Post("/:trackerkey")
+  @Post()
   @ApiOperation({
     summary: "Criação de click",
   })
-  public async create(
-    @Param("trackerkey") key: string,
-    @Req() request: Request,
-  ) {
+  public async create(@Req() request: Request, @Body() data: CreateClickDto) {
     const click = await this.GenerateClickService.handle({
-      key,
+      ...data,
       req: request,
     });
     return {

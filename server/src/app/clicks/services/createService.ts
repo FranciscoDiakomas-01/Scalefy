@@ -7,12 +7,13 @@ import { UserNotSubscribed } from "src/app/subscriptions/error";
 import { SubscriptionStatus } from "src/domains/entities/Subscription";
 import type IclickRepository from "../repositories/absctration";
 import type ITrackerRepository from "src/app/trackers/repositories/absctration";
+import { generateMetadata } from "src/core/utils";
+import { CreateClickDto } from "../dto/create";
 import type { Request } from "express";
-import { detectTrafficSource, generateMetadata } from "src/core/utils";
 
 @Injectable()
 export default class GenerateClickService implements InterService<
-  { req: Request; key: string },
+  CreateClickDto & { req: Request },
   Campains
 > {
   constructor(
@@ -24,12 +25,12 @@ export default class GenerateClickService implements InterService<
     private readonly ITrackerRepository: ITrackerRepository,
   ) {}
 
-  public async handle(data: { req: Request; key: string }): Promise<Campains> {
-    const { key, req } = data;
-    const tracker = await this.ITrackerRepository.getByid(key);
+  public async handle(
+    data: CreateClickDto & { req: Request },
+  ): Promise<Campains> {
+    const { trackerId, req, ...trackerInfo } = data;
+    const tracker = await this.ITrackerRepository.getByid(trackerId);
     const metadata = generateMetadata(req);
-    const traffic = detectTrafficSource(req);
-
     if (!tracker) {
       throw new NotFoundException({
         message: "Trackeador não encontrado",
@@ -53,7 +54,7 @@ export default class GenerateClickService implements InterService<
     const click = await this.IclickRepository.genclick(
       tracker.id,
       metadata,
-      traffic,
+      trackerInfo,
     );
     return click as any;
   }
