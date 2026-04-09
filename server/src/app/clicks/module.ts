@@ -6,7 +6,6 @@ import PrismaClickRepositorie from "./repositories/implementation";
 import GenerateClickService from "./services/createService";
 import GetClickServices from "./services/getService";
 import TrackersModule from "../trackers/module";
-import EventModule from "../events/module";
 
 @Module({
   providers: [
@@ -26,6 +25,6 @@ import EventModule from "../events/module";
     GetClickServices,
   ],
   controllers: [ClickController],
-  imports: [SubscriptionModule, CostumerModule, TrackersModule, EventModule],
+  imports: [SubscriptionModule, CostumerModule, TrackersModule],
 })
 export default class ClickModule {}

@@ -19,26 +19,39 @@ export default class PrismaClickRepositorie implements IclickRepository {
         trackerId: trackerId,
       },
     });
-    await this.provider.trackers.update({
-      where: {
-        id: trackerId,
-      },
-      data: {
-        campain: {
-          update: {
-            totalClicks: {
-              increment: 1,
+    await Promise.all([
+      this.provider.trackers.update({
+        where: {
+          id: trackerId,
+        },
+        data: {
+          campain: {
+            update: {
+              totalClicks: {
+                increment: 1,
+              },
+              totalPageViews: {
+                increment: 1,
+              },
             },
           },
+          totalClicks: {
+            increment: 1,
+          },
+          totalPageViews: {
+            increment: 1,
+          },
         },
-        totalClicks: {
-          increment: 1,
+      }),
+      this.provider.events.create({
+        data: {
+          amount: 0,
+          eventType: "PAGEVIEW",
+          method: "LINK",
+          clickId: click.id,
         },
-        totalPageViews: {
-          increment: 1,
-        },
-      },
-    });
+      }),
+    ]);
     return click as Clicks;
   }
   public async getClickByTrackerId(
