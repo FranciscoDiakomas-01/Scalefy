@@ -7,6 +7,11 @@ import { TokenExpiredError } from "../error";
 export class SessionTokenService implements ISession {
   private readonly secret = process.env.SECRET_KEY!;
 
+  constructor() {
+    if (!this.secret) {
+      throw new Error("JWT Secret not provided");
+    }
+  }
   public gen(payload: ISessionToken): string {
     return jwt.sign(payload, this.secret, {
       expiresIn: "30d",
@@ -26,6 +31,11 @@ export class SessionTokenService implements ISession {
 export class RecoveryTokenService implements ISession {
   private readonly secret = process.env.SECRET_KEY_RESET!;
 
+  constructor() {
+    if (!this.secret) {
+      throw new Error("JWT Secret not provided");
+    }
+  }
   public gen(payload: Required<ISessionToken>): string {
     return jwt.sign(payload, this.secret, {
       expiresIn: "5m",

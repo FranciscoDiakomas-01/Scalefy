@@ -13,6 +13,7 @@ export default class PlinkPay implements IGatewayPaymentService {
   private readonly apiUrl: string = "https://api.plinqpay.com/v1/transaction";
   private readonly callbackUrl: string = "https://meusite.com/webhook";
   private readonly logger = new Logger(PlinkPay.name);
+
   constructor() {
     if (!this.apiKey) {
       throw new Error(

@@ -1,0 +1,9 @@
+## Example .env ##
+
+# DATABASE_URL=""
+# SECRET_KEY=""
+# SECRET_KEY_RESET=""
+# API_RESEND_KEY=""
+# PLINKPAY_API_KEY=""
+# ADMIN_EMAIL=""
+# ADMIN_PASSWORD=""
