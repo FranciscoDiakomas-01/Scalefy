@@ -13,6 +13,7 @@ import IsadminGuard from "src/infra/http/guards/isAdmin.guard";
 import GetEventsServices from "./services/getService";
 import CreateEventService from "./services/createService";
 import EventDTO from "./dto/create";
+import IsActiveUser from "src/infra/http/guards/isActiveUser.guard";
 
 @Controller("events")
 export default class EventsController {
@@ -36,7 +37,7 @@ export default class EventsController {
   }
 
   @Get(":id")
-  @UseGuards(IsadminGuard)
+  @UseGuards(IsActiveUser)
   @ApiOperation({
     summary: "Listagem de eventos por click",
   })

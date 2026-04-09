@@ -3,6 +3,7 @@ import { IPaginationProps } from "src/core/types";
 import NoPermitionError from "src/core/error";
 import type IclickRepository from "../repositories/absctration";
 import type ITrackerRepository from "src/app/trackers/repositories/absctration";
+import Clicks from "src/domains/entities/Click";
 
 @Injectable()
 export default class GetClickServices {
@@ -31,8 +32,18 @@ export default class GetClickServices {
       trackerId,
       props,
     );
+
+    const { items, ...rest } = clicks;
+    const fomatedItems: Clicks[] = items.map((item) => {
+      return {
+        ...item,
+        clientData: JSON.parse(item.clientData as string),
+        trackerData: JSON.parse(item.trackerData as string),
+      };
+    });
     return {
-      data: clicks,
+      data: fomatedItems,
+      ...rest,
     };
   }
 }

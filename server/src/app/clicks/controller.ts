@@ -35,6 +35,7 @@ export default class ClickController {
       ...data,
       req: request,
     });
+
     return {
       data: click,
     };

@@ -10,11 +10,12 @@ import type ITrackerRepository from "src/app/trackers/repositories/absctration";
 import { generateMetadata } from "src/core/utils";
 import { CreateClickDto } from "../dto/create";
 import type { Request } from "express";
+import Clicks from "src/domains/entities/Click";
 
 @Injectable()
 export default class GenerateClickService implements InterService<
   CreateClickDto & { req: Request },
-  Campains
+  Clicks
 > {
   constructor(
     @Inject("ISubscriptionsRepository")
@@ -27,7 +28,7 @@ export default class GenerateClickService implements InterService<
 
   public async handle(
     data: CreateClickDto & { req: Request },
-  ): Promise<Campains> {
+  ): Promise<Clicks> {
     const { trackerId, req, ...trackerInfo } = data;
     const tracker = await this.ITrackerRepository.getByid(trackerId);
     const metadata = generateMetadata(req);
@@ -56,6 +57,10 @@ export default class GenerateClickService implements InterService<
       metadata,
       trackerInfo,
     );
-    return click as any;
+    return {
+      ...click,
+      clientData: JSON.parse(click.clientData as string),
+      trackerData: JSON.parse(click.trackerData as string),
+    } as any;
   }
 }

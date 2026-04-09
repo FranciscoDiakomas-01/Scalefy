@@ -47,7 +47,6 @@ export default class GetTrackerServices {
     }
     return {
       campain,
-      trackers,
     };
   }
 }

@@ -3,7 +3,6 @@ import { PrismaService } from "src/infra/Database/prisma";
 import CampainsDTO from "../dto/create";
 import IEventRepositorie from "./absctration";
 import Events, { EventType } from "src/domains/entities/Event";
-import Clicks from "src/domains/entities/Click";
 
 @Injectable()
 export default class PrismaEventRepositorie implements IEventRepositorie {
@@ -13,32 +12,37 @@ export default class PrismaEventRepositorie implements IEventRepositorie {
       where: {
         clickId,
       },
+      include: {
+        client: true,
+        products: true,
+      },
     });
 
     return events as any;
   }
   public async register(data: CampainsDTO): Promise<Events> {
-    const clik = (await this.provider.clicks.findFirst({
+    const click = await this.provider.clicks.findUnique({
       where: {
         id: data.clickId,
       },
-
       include: {
-        tracker: {
-          include: {
-            campain: true,
-          },
-        },
+        tracker: true,
       },
-    })) as any as Clicks;
-    const { tracker } = clik;
+    });
+
+    if (!click) {
+      throw new Error("Click not found");
+    }
+    const { tracker } = click;
     const { client, products, eventType } = data;
+    const amount = Number(data.amount) || 0;
     const event = await this.provider.events.create({
       data: {
-        amount: Number(data.amount),
+        amount,
         clickId: data.clickId,
-        eventType: data.eventType,
+        eventType,
         method: data.method,
+
         client: {
           create: {
             email: client.email,
@@ -46,47 +50,41 @@ export default class PrismaEventRepositorie implements IEventRepositorie {
             phone: client.phone,
           },
         },
+
         products: {
-          create: products.map((item) => {
-            return {
-              price: item.price,
-              title: item.title,
-              description: item?.description,
-            };
-          }),
+          create: products.map((item) => ({
+            price: Number(item.price),
+            title: item.title,
+            description: item?.description,
+          })),
         },
       },
     });
-    await this.provider.clicks.update({
+    const isPurchase = eventType === EventType.PURCHASE;
+    const isLead = eventType === EventType.LEAD;
+    const isPageView = eventType === EventType.PAGEVIEW;
+    const totalPageViews = isPageView
+      ? tracker.totalPageViews + 1
+      : tracker.totalPageViews;
+    const totalPurchases = isPurchase
+      ? tracker.totalPurchases + 1
+      : tracker.totalPurchases;
+    const totalLeaeds = isLead ? tracker.totalLeaeds + 1 : tracker.totalLeaeds;
+    const totalEarned = isPurchase
+      ? Number(tracker.totalEarned) + amount
+      : Number(tracker.totalEarned);
+    await this.provider.trackers.update({
       where: {
-        id: event.clickId,
+        id: tracker.id,
       },
       data: {
-        tracker: {
-          update: {
-            totalPageViews:
-              eventType === EventType.PAGEVIEW
-                ? tracker.totalPageViews + 1
-                : tracker.totalPageViews,
-
-            totalPurchases:
-              eventType === EventType.PURCHASE
-                ? tracker.totalPurchases + 1
-                : tracker.totalPurchases,
-
-            totalLeaeds:
-              eventType === EventType.LEAD
-                ? tracker.totalLeaeds + 1
-                : tracker.totalLeaeds,
-
-            totalEarned:
-              eventType === EventType.PURCHASE
-                ? tracker.totalEarned + data.amount
-                : tracker.totalEarned,
-          },
-        },
+        totalPageViews,
+        totalPurchases,
+        totalLeaeds,
+        totalEarned: totalEarned.toFixed(2),
       },
     });
+
     return event as any;
   }
   public async countEvents(clickId: string): Promise<number> {

@@ -31,6 +31,12 @@ export default class PrismaClickRepositorie implements IclickRepository {
             },
           },
         },
+        totalClicks: {
+          increment: 1,
+        },
+        totalPageViews: {
+          increment: 1,
+        },
       },
     });
     return click as Clicks;
@@ -68,6 +74,13 @@ export default class PrismaClickRepositorie implements IclickRepository {
     return (await this.provider.clicks.findFirst({
       where: {
         id,
+      },
+      include: {
+        tracker: {
+          include: {
+            campain: true,
+          },
+        },
       },
     })) as any;
   }

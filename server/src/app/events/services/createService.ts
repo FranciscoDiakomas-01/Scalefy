@@ -53,7 +53,7 @@ export default class CreateEventService implements InterService<
     if (isPendingPayment || isExpired || isInactive) {
       throw new NotPlanAssociatedError();
     }
-    const Max_Events_Per_Click = 5;
+    const Max_Events_Per_Click = 10;
     if (totalEvents >= Max_Events_Per_Click) {
       throw new BadRequestException({
         message: "O click ja atingiu o limite de eventos",
