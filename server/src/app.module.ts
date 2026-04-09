@@ -16,6 +16,8 @@ import CampainsModule from "./app/campains/module";
 import TrackersModule from "./app/trackers/module";
 import ClickModule from "./app/clicks/module";
 import EventModule from "./app/events/module";
+import { ScheduleModule } from "@nestjs/schedule";
+import { CronJobModule } from "./infra/Schedule/module";
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import EventModule from "./app/events/module";
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     CoreModule,
     CostumerModule,
@@ -39,6 +42,7 @@ import EventModule from "./app/events/module";
     TrackersModule,
     ClickModule,
     EventModule,
+    CronJobModule,
   ],
   controllers: [],
   providers: [],
