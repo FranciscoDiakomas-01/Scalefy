@@ -1,79 +1,159 @@
 # ScaleFy
 
-**ScaleFy** é um sistema de gerenciamento de campanhas, trackers e eventos para anúncios, com integração com Meta Ads, pixels e monitoramento de conversões. Permite criar trackers para cada anúncio, registrar clicks, eventos e gerar relatórios de performance.
+**ScaleFy** é uma plataforma de rastreamento e análise de campanhas que permite criar, gerenciar e otimizar funis de marketing através de trackers inteligentes e monitoramento de eventos em tempo real.
+
+Diferente de ferramentas dependentes de plataformas externas, o ScaleFy oferece um sistema independente onde o próprio usuário define suas campanhas, trackers e coleta de dados.
 
 ---
 
-## Tecnologias utilizadas
+## 🚀 Proposta
 
-- **Backend:** Node.js, NestJS, Prisma, PostgreSQL
-- **Cache / Eventos:** Redis
-- **Frontend:** React, Next.js, React Native
-- **Integrações externas:** Meta Ads API, Pixel Tracking, APIs de conversão de moeda, Email/SMS APIs
-- **Outros:** Docker, Tailwind CSS, TypeScript
+O ScaleFy permite que qualquer usuário:
+
+- Crie campanhas manualmente
+- Gere links rastreáveis (trackers)
+- Monitore cliques e comportamento do usuário
+- Capture eventos como leads, vendas e pageviews
+- Analise performance de funis sem depender de terceiros
+
+Se o funil tiver o script instalado, os dados são enviados automaticamente para o sistema.
 
 ---
 
-## Estrutura de dados principal
+## 🧱 Tecnologias
 
-### Tenant (Usuário do sistema)
+- **Backend:** Node.js, NestJS, Prisma, PostgreSQL  
+- **Cache & Eventos:** Redis  
+- **Frontend:** React, Next.js, React Native  
+- **Infraestrutura:** Docker  
+- **Linguagem:** TypeScript  
 
-- `id`, `name`, `email`, `password`
-- `trackers`: Trackers criados pelo usuário
-- `metaConnections`: Contas conectadas da Meta
-- `subscriptions`, `plans`, `notifications`, `apikeys`
+---
 
-### MetaConnection
+## 🧩 Estrutura principal
 
-- Conexão do usuário com a Meta (Facebook/Instagram)
-- Contém `adAccounts` e `pixels`
+### Tenant (Usuário)
 
-### MetaAdAccount
+- Gerencia sua conta e plano (free ou pago)
+- Possui campanhas, trackers e eventos
 
-- Representa uma conta de anúncios
-- Contém `campaigns` e `pixels`
+---
 
-### Pixel
+### Campaign
 
-- Pixel do MetaAdAccount
-- Pode ser usado por diversos AdSets e Ads
-- Guardado com `externalId` e `metaPixelId`
+- Criada manualmente pelo usuário
+- Contém:
+  - `name`
+  - `funnelUrl`
+  - `description` (opcional)
+- Agrupa trackers
 
-### Campaign → AdSet → Ad
-
-- **Campaign:** contém ad sets e ads
-- **AdSet:** conjunto de anúncios dentro de uma campanha
-- **Ad:** anúncio individual com `destinationUrl`, vinculado ao tracker
+---
 
 ### Tracker
 
-- Vinculado a um Ad
-- Contém `funnelUrl`, `url` (único), `clicks` registrados
-
-### Click
-
-- Registrado ao visitar o Tracker
-- Pode gerar diversos `Event`s
-
-### Event
-
-- Tipos: `PAGEVIEW`, `LEAD`, `PURCHASE`, `CLICK`, `ADDTOCART`, `DOWNLOAD`, `SUBSCRIPTION`, `INITIATECHECKOUT`
-- Pode conter `revenue`, `currency`, `convertedRevenue`, `metadata`
-
-### Notification
-
-- Notificações para o Tenant
-- Tipos: `PAYMENT`, `SYSTEM`, `ALERT`, `VISIT`
+- Gerado a partir de uma campanha
+- Contém:
+  - `key` (identificador único)
+  - `url` (link rastreável)
+  - `funnelUrl` associado
+- Responsável por iniciar o rastreamento
 
 ---
 
-## Fluxo principal
+### Click
 
-1. Usuário cria **Tenant** e conecta sua **Meta Account**.
-2. Usuário cria **Campaign / AdSet / Ad** na Meta.
-3. Usuário cria **Tracker** no ScaleFy, vinculado ao Ad.
-4. Quando um cliente clica no tracker:
-   - Cria um `Click` com IP e metadata
-   - Registra `Event`s de acordo com o comportamento (ex: PAGEVIEW, PURCHASE)
-5. Admin pode definir taxas de conversão entre moedas e gerar relatórios de revenue
-6. Sistema exibe dashboards com desempenho de campanhas, ads e sets
+- Criado ao acessar um tracker
+- Contém:
+  - `clickId`
+  - IP, user-agent, metadata
+- Serve como base para eventos
+
+---
+
+### Event
+
+Eventos capturados a partir do comportamento do usuário:
+
+- `PAGEVIEW`
+- `CLICK`
+- `LEAD`
+- `PURCHASE`
+- `ADDTOCART`
+- `INITIATECHECKOUT`
+- `DOWNLOAD`
+- `SUBSCRIPTION`
+
+Pode conter:
+
+- `revenue`
+- `currency`
+- `convertedRevenue`
+- `metadata`
+
+---
+
+## 🔄 Fluxo do sistema
+
+1. Usuário cria conta e escolhe um plano (free ou pago)
+2. Cria uma **Campaign** manualmente informando:
+   - Nome
+   - Funnel URL
+3. Cria um **Tracker**
+4. O sistema gera uma URL com uma `key` única
+5. Usuário usa essa URL nos seus anúncios ou tráfego
+
+---
+
+### 🔗 Quando alguém acessa o tracker:
+
+- O sistema:
+  - Identifica a `key`
+  - Gera um `clickId`
+  - Registra um **Click**
+
+---
+
+### 📡 Se o funil tiver o script instalado:
+
+- O frontend envia eventos para a API
+- Eventos são associados ao `clickId`
+- O sistema registra ações como:
+  - Visualização de página
+  - Leads
+  - Compras
+
+---
+
+## 📊 Análise e métricas
+
+O ScaleFy permite:
+
+- Visualizar performance por campanha
+- Analisar conversões por tracker
+- Medir revenue (com conversão de moeda)
+- Entender o comportamento do usuário no funil
+
+---
+
+## ⚠️ Considerações
+
+O ScaleFy funciona como um sistema independente de tracking, o que implica desafios importantes como:
+
+- Precisão na captura de eventos
+- Bloqueios por adblockers
+- Atribuição de conversões
+- Latência no redirecionamento
+
+Esses fatores devem ser considerados na evolução do sistema.
+
+---
+
+## 🔮 Possíveis evoluções
+
+- Sistema de atribuição (first-click / last-click)
+- A/B testing de funis
+- Rotação de tráfego (split)
+- Webhooks para integrações externas
+- Integração com canais como email e WhatsApp
+- Relatórios avançados e dashboards inteligentes
