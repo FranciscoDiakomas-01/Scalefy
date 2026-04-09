@@ -58,7 +58,7 @@ export default class CreateTrackerService implements InterService<
     }
     const key = crypto.randomUUID();
     const url = new URL(campain.funilUrl);
-    url.searchParams.set("trackerKey", key);
+    url.searchParams.set("scalefyTracker", key);
     const tracker = await this.ITrackerRepository.create({
       campainsId: campain.id,
       key,

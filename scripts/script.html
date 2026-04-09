@@ -1,0 +1,109 @@
+<script>
+  (function () {
+    const API_URL = "https://api.seusite.com";
+    const STORAGE_KEY = "scalefy_click_id";
+
+    function getClickId() {
+      return localStorage.getItem(STORAGE_KEY);
+    }
+
+    function setClickId(id) {
+      localStorage.setItem(STORAGE_KEY, id);
+    }
+
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+
+      return {
+        trackerId: params.get("scalefyTracker"),
+        utm_source: params.get("utm_source"),
+        utm_medium: params.get("utm_medium"),
+        utm_campaign: params.get("utm_campaign"),
+        utm_content: params.get("utm_content"),
+      };
+    }
+
+    function getMeta() {
+      return {
+        referrer: document.referrer || null,
+        userAgent: navigator.userAgent,
+      };
+    }
+
+    async function createClickIfNeeded() {
+      let clickId = getClickId();
+      if (clickId) return clickId;
+      const query = getQueryParams();
+      if (!query.trackerId) return null;
+      const response = await fetch(`${API_URL}/click`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...query,
+          ...getMeta(),
+        }),
+      });
+      const data = await response.json();
+      if (data?.clickId) {
+        setClickId(data.clickId);
+        return data.clickId;
+      }
+      return null;
+    }
+
+    async function sendEvent(event) {
+      const clickId = await createClickIfNeeded();
+
+      if (!clickId) return;
+
+      const payload = {
+        clickId,
+        ...event,
+      };
+
+      const url = `${API_URL}/event`;
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(payload)], {
+          type: "application/json",
+        });
+
+        navigator.sendBeacon(url, blob);
+      } else {
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+      }
+    }
+
+    window.ScaleFyClickTracker = {
+      lead: function (client) {
+        sendEvent({
+          eventType: "LEAD",
+          amount: 0,
+          method: "PIX",
+          client,
+          products: [],
+        });
+      },
+      purchase: function (data) {
+        sendEvent({
+          eventType: "PURCHASE",
+          amount: data.amount,
+          method: data.method,
+          client: data.client,
+          products: data.products || [],
+        });
+      },
+    };
+    document.addEventListener("DOMContentLoaded", function () {
+      createClickIfNeeded();
+    });
+  })();
+</script>
