@@ -6,6 +6,7 @@ import GetCampainService from "./services/getService";
 import PrismaCampainRepositorie from "./repositories/implementation";
 import SubscriptionModule from "../subscriptions/module";
 import CampainsController from "./controller";
+import ToogleCampainService from "./services/toogleService";
 
 @Module({
   providers: [
@@ -15,6 +16,7 @@ import CampainsController from "./controller";
     },
     CreateCampainService,
     UpdateCampainService,
+    ToogleCampainService,
     GetCampainService,
   ],
   exports: [
@@ -25,6 +27,7 @@ import CampainsController from "./controller";
     CreateCampainService,
     UpdateCampainService,
     GetCampainService,
+    ToogleCampainService,
   ],
   controllers: [CampainsController],
   imports: [SubscriptionModule, CostumerModule],

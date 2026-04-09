@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -19,6 +20,7 @@ import { ApiOperation } from "@nestjs/swagger";
 import IsadminGuard from "src/infra/http/guards/isAdmin.guard";
 import type { IPaginationProps } from "src/core/types";
 import { PaginationPipe } from "src/infra/http/pipes";
+import ToogleCampainService from "./services/toogleService";
 
 @Controller("campains")
 @UseGuards(IsActiveUser)
@@ -27,6 +29,7 @@ export default class CampainsController {
     private readonly CreateCampainService: CreateCampainService,
     private readonly UpdateCampainService: UpdateCampainService,
     private readonly GetCampainService: GetCampainService,
+    private readonly ToogleCampainService: ToogleCampainService,
   ) {}
 
   @Post()
@@ -58,6 +61,24 @@ export default class CampainsController {
   ) {
     const updated = await this.UpdateCampainService.handle({
       ...data,
+      userId,
+      campainId: id,
+    });
+
+    return {
+      data: updated,
+    };
+  }
+
+  @Patch(":id")
+  @ApiOperation({
+    summary: "Toogle de campanha",
+  })
+  public async toogle(
+    @CurrentUser() userId: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
+  ) {
+    const updated = await this.ToogleCampainService.handle({
       userId,
       campainId: id,
     });

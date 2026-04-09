@@ -94,4 +94,12 @@ export default class PrismaCampainRepositorie implements ICampainRepositorie {
       data,
     })) as any;
   }
+  public async toogle(status: boolean, id: string) {
+    await this.provider.campains.update({
+      where: { id },
+      data: {
+        isActive: status,
+      },
+    });
+  }
 }

@@ -13,4 +13,5 @@ export default interface ICampainRepositorie {
   update(data: CampainsDTO, id: string): Promise<Campains | null>;
   countByUserId(userId: string): Promise<number>;
   count(): Promise<number>;
+  toogle(status: boolean, campainId: string): Promise<void>;
 }
