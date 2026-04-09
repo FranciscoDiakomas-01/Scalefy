@@ -73,6 +73,7 @@ export default class PrismaEventRepositorie implements IEventRepositorie {
     const totalEarned = isPurchase
       ? Number(tracker.totalEarned) + amount
       : Number(tracker.totalEarned);
+
     await this.provider.trackers.update({
       where: {
         id: tracker.id,
@@ -82,6 +83,14 @@ export default class PrismaEventRepositorie implements IEventRepositorie {
         totalPurchases,
         totalLeaeds,
         totalEarned: totalEarned.toFixed(2),
+        campain: {
+          update: {
+            totalEarned,
+            totalPageViews,
+            totalPurchases,
+            totalLeaeds,
+          },
+        },
       },
     });
 

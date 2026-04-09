@@ -11,6 +11,8 @@ import { generateMetadata } from "src/core/utils";
 import { CreateClickDto } from "../dto/create";
 import type { Request } from "express";
 import Clicks from "src/domains/entities/Click";
+import type IEventRepositorie from "src/app/events/repositories/absctration";
+import { EventType, Paymethod } from "src/domains/entities/Event";
 
 @Injectable()
 export default class GenerateClickService implements InterService<
@@ -24,6 +26,8 @@ export default class GenerateClickService implements InterService<
     private readonly IclickRepository: IclickRepository,
     @Inject("ITrackerRepository")
     private readonly ITrackerRepository: ITrackerRepository,
+    @Inject("IEventRepositorie")
+    private readonly IEventRepositorie: IEventRepositorie,
   ) {}
 
   public async handle(
@@ -57,6 +61,18 @@ export default class GenerateClickService implements InterService<
       metadata,
       trackerInfo,
     );
+    await this.IEventRepositorie.register({
+      amount: 0,
+      clickId: click.id,
+      client: {
+        email: "pageview",
+        name: "pageview",
+        phone: "pageview",
+      },
+      eventType: EventType.PAGEVIEW,
+      method: Paymethod.LINK,
+      products: [],
+    });
     return {
       ...click,
       clientData: JSON.parse(click.clientData as string),
